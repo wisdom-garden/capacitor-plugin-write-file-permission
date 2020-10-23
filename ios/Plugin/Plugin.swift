@@ -14,4 +14,20 @@ public class WriteFilePermission: CAPPlugin {
             "value": value
         ])
     }
+
+    @objc func check(_ call: CAPPluginCall) {
+        // let permissionName = call.getString("permissionName") ?? ""
+        call.resolve([
+            "result": true
+        ])
+    }
+
+    @objc func request(_ call: CAPPluginCall) {
+        // let permissionName = call.getString("permissionName") ?? ""
+        call.success([
+            "result": true
+        ])
+    }
+
+
 }

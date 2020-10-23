@@ -4,8 +4,10 @@ declare module '@capacitor/core' {
   }
 }
 
+export type PermissionType = "WriteExternalStorage";
+
 export interface WriteFilePermissionPlugin {
   echo(options: { value: string }): Promise<{ value: string }>;
-  check(options: { permissionName: string }): Promise<{ result: boolean }>;
-  request(options: { permissionName: string }): Promise<{ result: boolean }>;
+  check(options: { permissionName: PermissionType }): Promise<{ result: boolean }>;
+  request(options: { permissionName: PermissionType }): Promise<{ result: boolean }>;
 }

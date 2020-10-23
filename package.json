@@ -1,6 +1,6 @@
 {
   "name": "capacitor-plugin-write-file-permission",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "check android WRITE_EXTERNAL_STORAGE permission for capacitor",
   "main": "dist/plugin.js",
   "module": "dist/esm/index.js",
@@ -35,6 +35,7 @@
   },
   "files": [
     "dist/",
+    "ios/",
     "android/",
     "CapacitorPluginWriteFilePermission.podspec"
   ],
@@ -44,6 +45,9 @@
     "native"
   ],
   "capacitor": {
+    "ios": {
+      "src": "ios"
+    },
     "android": {
       "src": "android"
     }

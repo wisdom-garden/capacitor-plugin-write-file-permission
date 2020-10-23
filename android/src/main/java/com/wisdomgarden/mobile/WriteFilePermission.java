@@ -26,7 +26,7 @@ public class WriteFilePermission extends Plugin {
 
     @PluginMethod
     public void check(PluginCall call) {
-        String value = call.getString("permissionName");
+        // String value = call.getString("permissionName");
         boolean result = hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
         JSObject ret = new JSObject();
         ret.put("result", result);
@@ -36,7 +36,7 @@ public class WriteFilePermission extends Plugin {
     @PluginMethod
     public void request(PluginCall call) {
         saveCall(call);
-        String value = call.getString("permissionName");
+        // String value = call.getString("permissionName");
         boolean result = hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
         if (result) {
             JSObject ret = new JSObject();

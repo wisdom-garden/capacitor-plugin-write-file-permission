@@ -1,5 +1,5 @@
 import { WebPlugin } from '@capacitor/core';
-import { WriteFilePermissionPlugin } from './definitions';
+import { PermissionType, WriteFilePermissionPlugin } from './definitions';
 
 export class WriteFilePermissionWeb extends WebPlugin implements WriteFilePermissionPlugin {
   constructor() {
@@ -14,12 +14,12 @@ export class WriteFilePermissionWeb extends WebPlugin implements WriteFilePermis
     return options;
   }
 
-  async check(__options: { permissionName: string }): Promise<{ result: boolean }> {
-    return {result: false};
+  async check(__options: { permissionName: PermissionType }): Promise<{ result: boolean }> {
+    return {result: true};
   }
 
-  async request(__options: { permissionName: string }): Promise<{ result: boolean }> {
-    return {result: false};
+  async request(__options: { permissionName: PermissionType }): Promise<{ result: boolean }> {
+    return {result: true};
   }
 }
 
