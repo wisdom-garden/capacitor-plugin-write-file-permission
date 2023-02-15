@@ -1,7 +1,12 @@
 package com.wisdomgarden.mobile;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Environment;
+import android.provider.Settings;
+
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Logger;
 import com.getcapacitor.NativePlugin;
@@ -9,25 +14,33 @@ import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 
-@NativePlugin(requestCodes = { WriteFilePermission.FILESYSTEM_REQUEST_WRITE_FILE_PERMISSIONS })
+@NativePlugin(requestCodes = {WriteFilePermission.FILESYSTEM_REQUEST_WRITE_FILE_PERMISSIONS})
 public class WriteFilePermission extends Plugin {
 
     public static final int FILESYSTEM_REQUEST_WRITE_FILE_PERMISSIONS = 9527;
     private static final String PERMISSION_DENIED_ERROR = "Unable to do file operation, user denied permission request";
+    private static final String PERMISSION_NAME = Manifest.permission.WRITE_EXTERNAL_STORAGE;
+    private boolean userManagerExternalStorage = false;
 
-    @PluginMethod
-    public void echo(PluginCall call) {
-        String value = call.getString("value");
+    @Override
+    public void load() {
+        super.load();
+        this.userManagerExternalStorage = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R;
+    }
 
-        JSObject ret = new JSObject();
-        ret.put("value", value);
-        call.success(ret);
+
+    private boolean hasPermission() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            return Environment.isExternalStorageManager();
+        } else {
+            return hasPermission(PERMISSION_NAME);
+        }
     }
 
     @PluginMethod
     public void check(PluginCall call) {
-        // String value = call.getString("permissionName");
-        boolean result = hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        boolean result = this.hasPermission();
+
         JSObject ret = new JSObject();
         ret.put("result", result);
         call.resolve(ret);
@@ -36,8 +49,7 @@ public class WriteFilePermission extends Plugin {
     @PluginMethod
     public void request(PluginCall call) {
         saveCall(call);
-        // String value = call.getString("permissionName");
-        boolean result = hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        boolean result = this.hasPermission();
         if (result) {
             JSObject ret = new JSObject();
             ret.put("result", true);
@@ -45,7 +57,12 @@ public class WriteFilePermission extends Plugin {
             this.freeSavedCall();
             return;
         }
-        pluginRequestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, FILESYSTEM_REQUEST_WRITE_FILE_PERMISSIONS);
+        if (this.userManagerExternalStorage) {
+            pluginRequestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.MANAGE_EXTERNAL_STORAGE}, FILESYSTEM_REQUEST_WRITE_FILE_PERMISSIONS);
+        } else {
+            pluginRequestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, FILESYSTEM_REQUEST_WRITE_FILE_PERMISSIONS);
+        }
+
     }
 
     @Override
@@ -68,6 +85,18 @@ public class WriteFilePermission extends Plugin {
                 Logger.debug(getLogTag(), "User denied storage permission: " + perm);
                 savedCall.reject(PERMISSION_DENIED_ERROR);
                 this.freeSavedCall();
+
+                if (this.userManagerExternalStorage && perm.equals(Manifest.permission.MANAGE_EXTERNAL_STORAGE)) {
+                    try {
+                        Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, Uri.parse("package:" + getContext().getPackageName()));
+                        getContext().startActivity(intent);
+                    } catch (Exception ex) {
+                        Intent intent = new Intent();
+                        intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                        getContext().startActivity(intent);
+                    }
+                }
+
                 return;
             }
         }

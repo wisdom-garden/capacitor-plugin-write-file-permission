@@ -9,11 +9,6 @@ export class WriteFilePermissionWeb extends WebPlugin implements WriteFilePermis
     });
   }
 
-  async echo(options: { value: string }): Promise<{ value: string }> {
-    console.log('ECHO', options);
-    return options;
-  }
-
   async check(__options: { permissionName: PermissionType }): Promise<{ result: boolean }> {
     return {result: true};
   }

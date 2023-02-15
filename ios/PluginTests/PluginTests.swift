@@ -14,7 +14,7 @@ class PluginTests: XCTestCase {
         super.tearDown()
     }
 
-    func testEcho() {
+    func testCheck() {
         // This is an example of a functional test case for a plugin.
         // Use XCTAssert and related functions to verify your tests produce the correct results.
 
@@ -30,6 +30,6 @@ class PluginTests: XCTestCase {
             XCTFail("Error shouldn't have been called")
         })
 
-        plugin.echo(call!)
+        plugin.check(call!)
     }
 }
