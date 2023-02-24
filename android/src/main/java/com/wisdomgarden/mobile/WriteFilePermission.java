@@ -20,17 +20,16 @@ public class WriteFilePermission extends Plugin {
     public static final int FILESYSTEM_REQUEST_WRITE_FILE_PERMISSIONS = 9527;
     private static final String PERMISSION_DENIED_ERROR = "Unable to do file operation, user denied permission request";
     private static final String PERMISSION_NAME = Manifest.permission.WRITE_EXTERNAL_STORAGE;
-    private boolean userManagerExternalStorage = false;
+    private boolean useManagerExternalStorage = false;
 
     @Override
     public void load() {
         super.load();
-        this.userManagerExternalStorage = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R;
+        this.useManagerExternalStorage = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R && this.hasDefinedPermission(Manifest.permission.MANAGE_EXTERNAL_STORAGE);
     }
 
-
     private boolean hasPermission() {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+        if (this.useManagerExternalStorage && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
             return Environment.isExternalStorageManager();
         } else {
             return hasPermission(PERMISSION_NAME);
@@ -57,12 +56,11 @@ public class WriteFilePermission extends Plugin {
             this.freeSavedCall();
             return;
         }
-        if (this.userManagerExternalStorage) {
+        if (this.useManagerExternalStorage) {
             pluginRequestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.MANAGE_EXTERNAL_STORAGE}, FILESYSTEM_REQUEST_WRITE_FILE_PERMISSIONS);
         } else {
             pluginRequestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, FILESYSTEM_REQUEST_WRITE_FILE_PERMISSIONS);
         }
-
     }
 
     @Override
@@ -86,7 +84,7 @@ public class WriteFilePermission extends Plugin {
                 savedCall.reject(PERMISSION_DENIED_ERROR);
                 this.freeSavedCall();
 
-                if (this.userManagerExternalStorage && perm.equals(Manifest.permission.MANAGE_EXTERNAL_STORAGE)) {
+                if (this.useManagerExternalStorage && perm.equals(Manifest.permission.MANAGE_EXTERNAL_STORAGE)) {
                     try {
                         Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, Uri.parse("package:" + getContext().getPackageName()));
                         getContext().startActivity(intent);
@@ -96,7 +94,6 @@ public class WriteFilePermission extends Plugin {
                         getContext().startActivity(intent);
                     }
                 }
-
                 return;
             }
         }
