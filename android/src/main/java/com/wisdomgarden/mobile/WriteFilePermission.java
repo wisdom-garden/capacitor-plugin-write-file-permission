@@ -19,12 +19,18 @@ public class WriteFilePermission extends Plugin {
 
     public static final int FILESYSTEM_REQUEST_WRITE_FILE_PERMISSIONS = 9527;
     private static final String PERMISSION_DENIED_ERROR = "Unable to do file operation, user denied permission request";
-    private static final String PERMISSION_NAME = Manifest.permission.WRITE_EXTERNAL_STORAGE;
+    private String permissionName = Manifest.permission.WRITE_EXTERNAL_STORAGE;
     private boolean useManagerExternalStorage = false;
 
     @Override
     public void load() {
         super.load();
+        // only check 1 permission in 3 permissions
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            // for android 13
+            permissionName = Manifest.permission.READ_MEDIA_IMAGES;
+        }
+        // for cn
         this.useManagerExternalStorage = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R && this.hasDefinedPermission(Manifest.permission.MANAGE_EXTERNAL_STORAGE);
     }
 
@@ -32,7 +38,7 @@ public class WriteFilePermission extends Plugin {
         if (this.useManagerExternalStorage && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
             return Environment.isExternalStorageManager();
         } else {
-            return hasPermission(PERMISSION_NAME);
+            return hasPermission(permissionName);
         }
     }
 
@@ -59,7 +65,12 @@ public class WriteFilePermission extends Plugin {
         if (this.useManagerExternalStorage) {
             pluginRequestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.MANAGE_EXTERNAL_STORAGE}, FILESYSTEM_REQUEST_WRITE_FILE_PERMISSIONS);
         } else {
-            pluginRequestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, FILESYSTEM_REQUEST_WRITE_FILE_PERMISSIONS);
+            // android 13 request 3 permissions
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                pluginRequestPermissions(new String[]{Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO, Manifest.permission.READ_MEDIA_AUDIO}, FILESYSTEM_REQUEST_WRITE_FILE_PERMISSIONS);
+            } else {
+                pluginRequestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, FILESYSTEM_REQUEST_WRITE_FILE_PERMISSIONS);
+            }
         }
     }
 
