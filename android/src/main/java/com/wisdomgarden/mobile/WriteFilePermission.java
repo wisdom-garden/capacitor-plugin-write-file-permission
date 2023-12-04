@@ -31,7 +31,7 @@ public class WriteFilePermission extends Plugin {
             permissionName = Manifest.permission.READ_MEDIA_IMAGES;
         }
         // for cn
-        this.useManagerExternalStorage = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R && this.hasDefinedPermission(Manifest.permission.MANAGE_EXTERNAL_STORAGE);
+        this.useManagerExternalStorage = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R && android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU && this.hasDefinedPermission(Manifest.permission.MANAGE_EXTERNAL_STORAGE);
     }
 
     private boolean hasPermission() {
