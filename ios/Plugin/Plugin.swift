@@ -21,5 +21,10 @@ public class WriteFilePermission: CAPPlugin {
         ])
     }
 
-
+    @objc func requestPostNotificationPermission(_ call: CAPPluginCall) {
+        // let permissionName = call.getString("permissionName") ?? ""
+        call.success([
+            "result": true
+        ])
+    }
 }

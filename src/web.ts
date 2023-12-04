@@ -16,6 +16,10 @@ export class WriteFilePermissionWeb extends WebPlugin implements WriteFilePermis
   async request(__options: { permissionName: PermissionType }): Promise<{ result: boolean }> {
     return {result: true};
   }
+
+  async requestPostNotificationPermission(): Promise<{ result: boolean }> {
+    return {result: true};
+  }
 }
 
 const WriteFilePermission = new WriteFilePermissionWeb();

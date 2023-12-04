@@ -9,4 +9,5 @@ export type PermissionType = "WriteExternalStorage";
 export interface WriteFilePermissionPlugin {
   check(options: { permissionName: PermissionType }): Promise<{ result: boolean }>;
   request(options: { permissionName: PermissionType }): Promise<{ result: boolean }>;
+  requestPostNotificationPermission(): Promise<{ result: boolean }>;
 }

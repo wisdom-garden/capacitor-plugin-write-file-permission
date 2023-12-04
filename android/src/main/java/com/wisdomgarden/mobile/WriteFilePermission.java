@@ -74,6 +74,16 @@ public class WriteFilePermission extends Plugin {
         }
     }
 
+    @PluginMethod
+    public void requestPostNotificationPermission(PluginCall call) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            saveCall(call);
+            pluginRequestPermission(Manifest.permission.POST_NOTIFICATIONS, FILESYSTEM_REQUEST_WRITE_FILE_PERMISSIONS);
+        } else {
+            this.onGranted(call);
+        }
+    }
+
     @Override
     protected void handleRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.handleRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -89,13 +99,13 @@ public class WriteFilePermission extends Plugin {
 
         for (int i = 0; i < grantResults.length; i++) {
             int result = grantResults[i];
-            String perm = permissions[i];
+            String permission = permissions[i];
             if (result == PackageManager.PERMISSION_DENIED) {
-                Logger.debug(getLogTag(), "User denied storage permission: " + perm);
+                Logger.debug(getLogTag(), "User denied permission: " + permission);
                 savedCall.reject(PERMISSION_DENIED_ERROR);
                 this.freeSavedCall();
 
-                if (this.useManagerExternalStorage && perm.equals(Manifest.permission.MANAGE_EXTERNAL_STORAGE)) {
+                if (this.useManagerExternalStorage && permission.equals(Manifest.permission.MANAGE_EXTERNAL_STORAGE)) {
                     try {
                         Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, Uri.parse("package:" + getContext().getPackageName()));
                         getContext().startActivity(intent);
