@@ -18,7 +18,7 @@ import com.getcapacitor.PluginMethod;
 public class WriteFilePermission extends Plugin {
 
     public static final int FILESYSTEM_REQUEST_WRITE_FILE_PERMISSIONS = 9527;
-    private static final String PERMISSION_DENIED_ERROR = "Unable to do file operation, user denied permission request";
+    private static final String PERMISSION_DENIED_ERROR = "Unable to do this operation, user denied permission request";
     private String permissionName = Manifest.permission.WRITE_EXTERNAL_STORAGE;
     private boolean useManagerExternalStorage = false;
 
@@ -53,15 +53,12 @@ public class WriteFilePermission extends Plugin {
 
     @PluginMethod
     public void request(PluginCall call) {
-        saveCall(call);
         boolean result = this.hasPermission();
         if (result) {
-            JSObject ret = new JSObject();
-            ret.put("result", true);
-            call.resolve(ret);
-            this.freeSavedCall();
+            this.onGranted(call);
             return;
         }
+        saveCall(call);
         if (this.useManagerExternalStorage) {
             pluginRequestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.MANAGE_EXTERNAL_STORAGE}, FILESYSTEM_REQUEST_WRITE_FILE_PERMISSIONS);
         } else {
@@ -80,7 +77,7 @@ public class WriteFilePermission extends Plugin {
             saveCall(call);
             pluginRequestPermission(Manifest.permission.POST_NOTIFICATIONS, FILESYSTEM_REQUEST_WRITE_FILE_PERMISSIONS);
         } else {
-            this.onGranted(call);
+            this.onDenied(call);
         }
     }
 
@@ -128,6 +125,12 @@ public class WriteFilePermission extends Plugin {
     private void onGranted(PluginCall call) {
         JSObject ret = new JSObject();
         ret.put("result", true);
+        call.resolve(ret);
+    }
+
+    private void onDenied(PluginCall call) {
+        JSObject ret = new JSObject();
+        ret.put("result", false);
         call.resolve(ret);
     }
 }
