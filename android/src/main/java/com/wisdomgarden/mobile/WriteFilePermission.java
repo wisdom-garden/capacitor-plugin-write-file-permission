@@ -16,44 +16,69 @@ import com.getcapacitor.PluginMethod;
 
 @NativePlugin(requestCodes = {WriteFilePermission.FILESYSTEM_REQUEST_WRITE_FILE_PERMISSIONS})
 public class WriteFilePermission extends Plugin {
-
     public static final int FILESYSTEM_REQUEST_WRITE_FILE_PERMISSIONS = 9527;
+
     private static final String PERMISSION_DENIED_ERROR = "Unable to do this operation, user denied permission request";
+
+    // sdk 30 | android version 11
+    private static final int ANDROID_VERSION_R = android.os.Build.VERSION_CODES.R;
+
+    // sdk 33 | android version 13
+    private static final int ANDROID_VERSION_TIRAMISU = android.os.Build.VERSION_CODES.TIRAMISU;
+
+    // sdk 34 | android version 14
+    private static final int ANDROID_VERSION_UPSIDE_DOWN_CAKE = android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+
     private String permissionName = Manifest.permission.WRITE_EXTERNAL_STORAGE;
+
     private boolean useManagerExternalStorage = false;
 
     @Override
     public void load() {
         super.load();
-        // only check 1 permission in 3 permissions
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            // for android 13
-            permissionName = Manifest.permission.READ_MEDIA_IMAGES;
-        }
-        // for cn
-        this.useManagerExternalStorage = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R && android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU && this.hasDefinedPermission(Manifest.permission.MANAGE_EXTERNAL_STORAGE);
+        determinePermissionName();
+        determineExternalStorageManagerUsage();
     }
 
-    private boolean hasPermission() {
-        if (this.useManagerExternalStorage && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R && android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU) {
-            return Environment.isExternalStorageManager();
-        } else {
-            return hasPermission(permissionName);
+    private void determinePermissionName() {
+        // for android 13
+        // only check 1 permission in 3 permissions
+        if (AndroidVersionUtils.isGreaterThanOrEqualTo(ANDROID_VERSION_TIRAMISU)) {
+            permissionName = Manifest.permission.READ_MEDIA_IMAGES;
         }
+    }
+
+    private void determineExternalStorageManagerUsage() {
+        if (AndroidVersionUtils.isBetween(ANDROID_VERSION_R, ANDROID_VERSION_TIRAMISU, true)) {
+            useManagerExternalStorage = hasDefinedPermission(Manifest.permission.MANAGE_EXTERNAL_STORAGE);
+        }
+    }
+
+    private boolean checkPermission() {
+        // return true if android version is greater than or equal to android 13
+        if (AndroidVersionUtils.isGreaterThanOrEqualTo(ANDROID_VERSION_TIRAMISU)) {
+            return true;
+        }
+        if (this.useManagerExternalStorage) {
+            return Environment.isExternalStorageManager();
+        }
+        return hasPermission(permissionName);
     }
 
     @PluginMethod
     public void check(PluginCall call) {
-        boolean result = this.hasPermission();
+        boolean result = this.checkPermission();
 
-        JSObject ret = new JSObject();
-        ret.put("result", result);
-        call.resolve(ret);
+        if (result) {
+            this.onGranted(call);
+        } else {
+            this.onDenied(call);
+        }
     }
 
     @PluginMethod
     public void request(PluginCall call) {
-        boolean result = this.hasPermission();
+        boolean result = this.checkPermission();
         if (result) {
             this.onGranted(call);
             return;
@@ -61,19 +86,19 @@ public class WriteFilePermission extends Plugin {
         saveCall(call);
         if (this.useManagerExternalStorage) {
             pluginRequestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.MANAGE_EXTERNAL_STORAGE}, FILESYSTEM_REQUEST_WRITE_FILE_PERMISSIONS);
-        } else {
-            // android 13 request 3 permissions
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-                pluginRequestPermissions(new String[]{Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO, Manifest.permission.READ_MEDIA_AUDIO}, FILESYSTEM_REQUEST_WRITE_FILE_PERMISSIONS);
-            } else {
-                pluginRequestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, FILESYSTEM_REQUEST_WRITE_FILE_PERMISSIONS);
-            }
+            return;
         }
+        // android 13 request 3 permissions
+        if (AndroidVersionUtils.isGreaterThanOrEqualTo((ANDROID_VERSION_TIRAMISU))) {
+            pluginRequestPermissions(new String[]{Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO, Manifest.permission.READ_MEDIA_AUDIO}, FILESYSTEM_REQUEST_WRITE_FILE_PERMISSIONS);
+            return;
+        }
+        pluginRequestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, FILESYSTEM_REQUEST_WRITE_FILE_PERMISSIONS);
     }
 
     @PluginMethod
     public void requestPostNotificationPermission(PluginCall call) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+        if (AndroidVersionUtils.isGreaterThanOrEqualTo(ANDROID_VERSION_TIRAMISU)) {
             saveCall(call);
             pluginRequestPermission(Manifest.permission.POST_NOTIFICATIONS, FILESYSTEM_REQUEST_WRITE_FILE_PERMISSIONS);
         } else {

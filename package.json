@@ -1,6 +1,6 @@
 {
   "name": "capacitor-plugin-write-file-permission",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "check android WRITE_EXTERNAL_STORAGE permission for capacitor",
   "main": "dist/plugin.js",
   "module": "dist/esm/index.js",
@@ -28,7 +28,7 @@
     "rimraf": "^3.0.0",
     "rollup": "^2.21.0",
     "swiftlint": "^1.0.1",
-    "typescript": "~3.8.3"
+    "typescript": "^4"
   },
   "peerDependencies": {
     "@capacitor/core": "^2.2.1"
@@ -60,5 +60,9 @@
   },
   "bugs": {
     "url": "https://github.com/wisdom-garden/capacitor-plugin-write-file-permission.git/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }
