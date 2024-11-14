@@ -26,26 +26,14 @@ public class WriteFilePermission extends Plugin {
     // sdk 33 | android version 13
     private static final int ANDROID_VERSION_TIRAMISU = android.os.Build.VERSION_CODES.TIRAMISU;
 
-    // sdk 34 | android version 14
-    private static final int ANDROID_VERSION_UPSIDE_DOWN_CAKE = android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
-
-    private String permissionName = Manifest.permission.WRITE_EXTERNAL_STORAGE;
+    private static final String ANDROID_PERMISSION_NAME = Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
     private boolean useManagerExternalStorage = false;
 
     @Override
     public void load() {
         super.load();
-        determinePermissionName();
         determineExternalStorageManagerUsage();
-    }
-
-    private void determinePermissionName() {
-        // for android 13
-        // only check 1 permission in 3 permissions
-        if (AndroidVersionUtils.isGreaterThanOrEqualTo(ANDROID_VERSION_TIRAMISU)) {
-            permissionName = Manifest.permission.READ_MEDIA_IMAGES;
-        }
     }
 
     private void determineExternalStorageManagerUsage() {
@@ -62,7 +50,7 @@ public class WriteFilePermission extends Plugin {
         if (this.useManagerExternalStorage) {
             return Environment.isExternalStorageManager();
         }
-        return hasPermission(permissionName);
+        return hasPermission(ANDROID_PERMISSION_NAME);
     }
 
     @PluginMethod
@@ -86,11 +74,6 @@ public class WriteFilePermission extends Plugin {
         saveCall(call);
         if (this.useManagerExternalStorage) {
             pluginRequestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.MANAGE_EXTERNAL_STORAGE}, FILESYSTEM_REQUEST_WRITE_FILE_PERMISSIONS);
-            return;
-        }
-        // android 13 request 3 permissions
-        if (AndroidVersionUtils.isGreaterThanOrEqualTo((ANDROID_VERSION_TIRAMISU))) {
-            pluginRequestPermissions(new String[]{Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO, Manifest.permission.READ_MEDIA_AUDIO}, FILESYSTEM_REQUEST_WRITE_FILE_PERMISSIONS);
             return;
         }
         pluginRequestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, FILESYSTEM_REQUEST_WRITE_FILE_PERMISSIONS);
